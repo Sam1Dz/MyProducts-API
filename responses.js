@@ -10,11 +10,12 @@ exports.ok = (message, res) => {
     res.end();
 }
 
-exports.dataMapping = (message, data, res) => {
+exports.dataMapping = (message, data, res, page) => {
     const result = {
         data: data,
         error: false,
-        message: message
+        message: message,
+        page: page ? Number(page) : 1
     };
     res.status(200);
     res.json(result);

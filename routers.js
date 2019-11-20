@@ -10,6 +10,7 @@ module.exports = function (app) {
 
     // Products Function
     app.get("/api/v1/get_products", products.getProducts);
+    app.get("/api/v1/search_products", products.searchProducts);
     app.post("/api/v1/insert_products", products.insertProducts);
     app.patch("/api/v1/update_products/:id", products.updateProducts);
     app.delete("/api/v1/delete_products/:id", products.deleteProducts);

@@ -3,20 +3,47 @@
 const time = require('moment');
 const responses = require('../responses.js');
 const connection = require('../connection.js');
+const { pagination } = require('../library/pagination.js');
 
 // Get Products
 exports.getProducts = (req, res) => {
+    let page = req.query.page ? req.query.page : 1;
+    let query = `SELECT tbP.id AS id, tbP.title AS title, tbP.description AS description, tbP.category AS category, tbC.name AS categoryName, tbP.date_created AS dateCreated, tbP.date_updated AS dateUpdated FROM tb_product AS tbP LEFT JOIN tb_category AS tbC ON tbP.category = tbC.id`;
+    
+    let sqlQuery = pagination(page, query);
     connection.query(
-        'SELECT tbP.id AS id, tbP.title AS title, tbP.description AS description, tbP.category AS category, tbC.name AS categoryName, tbP.date_created AS dateCreated, tbP.date_updated AS dateUpdated FROM tb_product AS tbP LEFT JOIN tb_category AS tbC ON tbP.category = tbC.id;',
-        function (err, rows) {
+        sqlQuery,
+        (err, rows) => {
             if (err) {
                 responses.error('Error while Getting Products Data!', 500, res);
             } else {
-                responses.dataMapping('Success Get Data Poducts', rows, res);
+                responses.dataMapping('Success Get Data Poducts', rows, res, page);
             }
         }
     )
+
     console.log("Products Function (getProducts) Requested at " + time().format('DD/MM/YYYY HH:mm:ss') + ' (UTC+7)');
+}
+
+// Search Products
+exports.searchProducts = (req, res) => {
+    let page = req.query.page ? req.query.page : 1;
+    let searchQuery = req.query.search ? req.query.search : "";
+    let query = `SELECT tbP.id AS id, tbP.title AS title, tbP.description AS description, tbP.category AS category, tbC.name AS categoryName, tbP.date_created AS dateCreated, tbP.date_updated AS dateUpdated FROM tb_product AS tbP LEFT JOIN tb_category AS tbC ON tbP.category = tbC.id WHERE tbP.title LIKE '%${searchQuery}%'`
+
+    let sqlQuery = pagination(page, query);
+    connection.query(
+        sqlQuery,
+        function (err, rows) {
+            if (err) {
+                responses.error('Error while Searching Products Data!', 500, res);
+            } else {
+                responses.dataMapping('Success Search Data Poducts', rows, res, page);
+            }
+        }
+    )
+    
+    console.log("Products Function (searchProducts) Requested at " + time().format('DD/MM/YYYY HH:mm:ss') + ' (UTC+7)');
 }
 
 // Insert Products
