@@ -9,15 +9,25 @@ const { pagination } = require('../library/pagination.js');
 exports.getProducts = (req, res) => {
     let page = req.query.page ? req.query.page : 1;
     let query = `SELECT tbP.id AS id, tbP.title AS title, tbP.description AS description, tbP.category AS category, tbC.name AS categoryName, tbP.date_created AS dateCreated, tbP.date_updated AS dateUpdated FROM tb_product AS tbP LEFT JOIN tb_category AS tbC ON tbP.category = tbC.id`;
-    
-    let sqlQuery = pagination(page, query);
+
+    let result = pagination(page, query);
     connection.query(
-        sqlQuery,
+        result[0],
         (err, rows) => {
             if (err) {
-                responses.error('Error while Getting Products Data!', 500, res);
+                responses.error('Error while Getting Products Data!', err, 500, res);
             } else {
-                responses.dataMapping('Success Get Data Poducts', rows, res, page);
+                connection.query(
+                    "SELECT COUNT(id) AS total FROM tb_product",
+                    (err, totalData) => {
+                        if (err) {
+                            console.log("Error2");
+                            responses.error('Error while Getting Products Data!', err, 500, res);
+                        } else {
+                            responses.dataMapping('Success Get Data Poducts', rows, res, page, Math.ceil(totalData[0].total/result[1]));
+                        }
+                    }
+                )
             }
         }
     )
@@ -36,7 +46,7 @@ exports.searchProducts = (req, res) => {
         sqlQuery,
         function (err, rows) {
             if (err) {
-                responses.error('Error while Searching Products Data!', 500, res);
+                responses.error('Error while Searching Products Data!', err, 500, res);
             } else {
                 responses.dataMapping('Success Search Data Poducts', rows, res, page);
             }
@@ -56,7 +66,7 @@ exports.insertProducts = (req, res) => {
         'INSERT INTO tb_product SET title=?, description=?, category=?, date_created=?, date_updated=?;', [title, description, category, datetime, datetime],
         function (err, rowsProducts) {
             if (err) {
-                responses.error('Error while Inserting Products Data!', 500, res);
+                responses.error('Error while Inserting Products Data!', err, 500, res);
             } else {
                 connection.query(
                     'SELECT name FROM tb_category WHERE id=?;', [category],
@@ -94,7 +104,7 @@ exports.updateProducts = (req, res) => {
         'UPDATE tb_product SET title=?, description=?, category=?, date_updated=? WHERE id=?;', [title, description, category, datetime, id],
         function (err) {
             if (err) {
-                responses.error('Error while Updating Products Data!', 500, res);
+                responses.error('Error while Updating Products Data!', err, 500, res);
             } else {
                 connection.query(
                     'SELECT name FROM tb_category WHERE id=?;', [category],
@@ -127,7 +137,7 @@ exports.deleteProducts = (req, res) => {
         'DELETE FROM tb_product WHERE id=?;', [id],
         function (err) {
             if (err) {
-                responses.error('Error while Deleting Products Data!', 500, res);
+                responses.error('Error while Deleting Products Data!', err, 500, res);
             } else {
                 let data = {
                     id: Number(id)

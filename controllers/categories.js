@@ -10,7 +10,7 @@ exports.getCategories = (req, res) => {
         'SELECT * FROM tb_category;',
         function (err, rows) {
             if (err) {
-                responses.error('Error while Getting Categories Data!', 500, res);
+                responses.error('Error while Getting Categories Data!', err, 500, res);
             } else {
                 responses.dataMapping('Success Get Data Categories', rows, res);
             }
@@ -26,7 +26,7 @@ exports.insertCategories = (req, res) => {
         'INSERT INTO tb_category SET name=?;', [name],
         function (err, rows) {
             if (err) {
-                responses.error('Error while Inserting Categories Data!', 500, res);
+                responses.error('Error while Inserting Categories Data!', err, 500, res);
             } else {
                 let data = {
                     id: rows.insertId,
@@ -47,10 +47,10 @@ exports.updateCategories = (req, res) => {
         'UPDATE tb_category SET name=? WHERE id=?;', [name, id],
         function (err) {
             if (err) {
-                responses.error('Error while Updating Categories Data!', 500, res);
+                responses.error('Error while Updating Categories Data!', err, 500, res);
             } else {
                 let data = {
-                    id: id,
+                    id: Number(id),
                     name: name
                 }
                 responses.dataMapping('Success Update Data Categories', data, res);
@@ -67,9 +67,12 @@ exports.deleteCategories = (req, res) => {
         'DELETE FROM tb_category WHERE id=?;', [id],
         function (err) {
             if (err) {
-                responses.error('Error while Deleting Categories Data!', 500, res);
+                responses.error('Error while Deleting Categories Data!', err, 500, res);
             } else {
-                responses.ok('Success Delete Data Categories', res);
+				let data = {
+                    id: Number(id)
+                }
+                responses.dataMapping('Success Delete Data Categories', data, res);
             }
         }
     )
